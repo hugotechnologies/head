@@ -9,13 +9,9 @@
 		<return-scalar column="glCode" type="string" />
 		<return-scalar column="glDesc" type="string" />
         <![CDATA[
-            SELECT gll.glcode_value as glCode,coo.coa_name as glDesc
-			FROM coahierarchy c
-			LEFT JOIN coa co ON co.coa_id = c.parent_coaid
-			LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
-			LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-			LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-			WHERE gl.glcode_value =(SELECT configuration_value from config_key_value where configuration_key='CashAccountHead');
+            Select b.glcode_value as glCode,a.coa_name as glDesc from coa a,gl_code b where a.glcode_id=b.glcode_id
+			and glcode_value in (Select lookup_name from lookup_value where entity_id in 
+			(Select entity_id from lookup_entity where entity_name='Cash'));
 
         ]]>
 	</sql-query>
@@ -24,13 +20,9 @@
 		<return-scalar column="glCode" type="string" />
 		<return-scalar column="glDesc" type="string" />
         <![CDATA[
-             SELECT gll.glcode_value as glCode,coo.coa_name as glDesc
-         	 FROM coahierarchy c
-              	  LEFT JOIN coa co ON co.coa_id = c.parent_coaid
-                  LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
-                  LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-                  LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-            WHERE gl.glcode_value = (SELECT configuration_value from config_key_value where configuration_key='BankAccountHead'); 
+            Select b.glcode_value as glCode,a.coa_name as glDesc from coa a,gl_code b where a.glcode_id=b.glcode_id
+			and glcode_value in (Select lookup_name from lookup_value where entity_id in 
+			(Select entity_id from lookup_entity where entity_name='Bank'));
 
         ]]>
 	</sql-query>
@@ -39,26 +31,13 @@
 		<return-scalar column="glCode" type="string" />
 		<return-scalar column="glDesc" type="string" />
         <![CDATA[
-          SELECT gll.glcode_value as glCode, coo.coa_name as glDesc
+         SELECT gll.glcode_value as glCode, coo.coa_name as glDesc
 			FROM coahierarchy c
 			      LEFT JOIN coa co ON co.coa_id = c.parent_coaid
 			      LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
 			      LEFT JOIN coa coo ON coo.coa_id = c.coa_id
 			      LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-			WHERE gl.glcode_value IN (SELECT gll.glcode_value
-			                          FROM coahierarchy c
-			                               LEFT JOIN coa co ON co.coa_id = c.parent_coaid
-			                               LEFT JOIN gl_code gl ON gl.glcode_id=co.glcode_id
-			                               LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-			                               LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-			                    	   WHERE gl.glcode_value IN
-			                                    (SELECT gll.glcode_value
-			                                     FROM coahierarchy c
-			                                          LEFT JOIN coa co ON co.coa_id=c.parent_coaid
-			                                     	  LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
-			                                          LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-			                                          LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-			                                     WHERE gl.glcode_value in ('10000','20000','30000','40000' )))   and gll.glcode_value <> :Gl_Code
+     		WHERE c.parent_coaid is not null and gll.glcode_value <> :Gl_Code ;
 
 
         ]]>
@@ -68,27 +47,13 @@
 		<return-scalar column="glCode" type="string" />
 		<return-scalar column="glDesc" type="string" />
         <![CDATA[
-                SELECT gll.glcode_value as glCode, coo.coa_name as glDesc
-				FROM coahierarchy c
-				      LEFT JOIN coa co ON co.coa_id = c.parent_coaid
-				      LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
-				      LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-				      LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-				WHERE gl.glcode_value IN (SELECT gll.glcode_value
-				                          FROM coahierarchy c
-				                               LEFT JOIN coa co ON co.coa_id = c.parent_coaid
-				                               LEFT JOIN gl_code gl ON gl.glcode_id=co.glcode_id
-				                               LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-				                               LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-				                    	   WHERE gl.glcode_value IN
-				                                    (SELECT gll.glcode_value
-				                                     FROM coahierarchy c
-				                                          LEFT JOIN coa co ON co.coa_id=c.parent_coaid
-				                                     	  LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
-				                                          LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-				                                          LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-				                                     WHERE gl.glcode_value in ('10000','20000','30000','40000' )))
-								order by 1
+               SELECT gll.glcode_value as glCode, coo.coa_name as glDesc
+			FROM coahierarchy c
+			      LEFT JOIN coa co ON co.coa_id = c.parent_coaid
+			      LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
+			      LEFT JOIN coa coo ON coo.coa_id = c.coa_id
+			      LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
+      WHERE c.parent_coaid is not null order by 1;
         ]]>
 
 	</sql-query>
@@ -272,21 +237,7 @@ and a.debit_credit_flag=0 and b.debit_credit_flag=1
 			      LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
 			      LEFT JOIN coa coo ON coo.coa_id = c.coa_id
 			      LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-			WHERE gl.glcode_value IN (SELECT gll.glcode_value
-			                          FROM coahierarchy c
-			                               LEFT JOIN coa co ON co.coa_id = c.parent_coaid
-			                               LEFT JOIN gl_code gl ON gl.glcode_id=co.glcode_id
-			                               LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-			                               LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-			                    	   WHERE gl.glcode_value IN
-			                                    (SELECT gll.glcode_value
-			                                     FROM coahierarchy c
-			                                          LEFT JOIN coa co ON co.coa_id=c.parent_coaid
-			                                     	  LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
-			                                          LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-			                                          LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-			                                     WHERE gl.glcode_value in ('10000','20000','30000','40000' )))   and gll.glcode_value <> :Gl_Code
-				order by 1 ;
+      WHERE c.parent_coaid is not null and gll.glcode_value <> :Gl_Code order by 1;
         ]]>
 	</sql-query>
 	
@@ -304,28 +255,13 @@ and a.debit_credit_flag=0 and b.debit_credit_flag=1
 		<return-scalar column="glCode" type="string" />
 		<return-scalar column="glDesc" type="string" />
         <![CDATA[
-            SELECT gll.glcode_value as glCode, coo.coa_name as glDesc
-   FROM coahierarchy c
-         LEFT JOIN coa co ON co.coa_id = c.parent_coaid
-         LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
-         LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-         LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-   WHERE gl.glcode_value IN (SELECT gll.glcode_value
-                             FROM coahierarchy c
-                                  LEFT JOIN coa co ON co.coa_id = c.parent_coaid
-                                  LEFT JOIN gl_code gl ON gl.glcode_id=co.glcode_id
-                                  LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-                                  LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-                           WHERE gl.glcode_value IN
-                                       (SELECT gll.glcode_value
-                                        FROM coahierarchy c
-                                             LEFT JOIN coa co ON co.coa_id=c.parent_coaid
-                                           LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
-                                             LEFT JOIN coa coo ON coo.coa_id = c.coa_id
-                                             LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
-                                        WHERE gl.glcode_value = (Select configuration_value from config_key_value where configuration_key='AssetAccountHead') 
-                                        or gl.glcode_value = (Select configuration_value from config_key_value where configuration_key='LiabilityAccountHead')
-                                        ));
+     SELECT gll.glcode_value as glCode, coo.coa_name as glDesc
+			FROM coahierarchy c
+			      LEFT JOIN coa co ON co.coa_id = c.parent_coaid
+			      LEFT JOIN gl_code gl ON gl.glcode_id = co.glcode_id
+			      LEFT JOIN coa coo ON coo.coa_id = c.coa_id
+			      LEFT JOIN gl_code gll ON gll.glcode_id = coo.glcode_id
+      WHERE c.parent_coaid is not null order by 1;
         ]]>
 
 	</sql-query>
